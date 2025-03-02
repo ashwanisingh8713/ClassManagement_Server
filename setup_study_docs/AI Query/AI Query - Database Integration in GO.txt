@@ -1,0 +1,222 @@
+In GoLang, Please integrate "Database Design for Class, Subject, Teacher Management"
+
+Here I want to create & alter all tables programmatically.
+
+
+Below are Tables with structure:
+
+### **1. Users Table**
+This table stores all users (Teachers, Admins, and Students) with their common attributes.
+
+```sql
+CREATE TABLE Users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('Teacher', 'Admin', 'Student')),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **2. TeacherProfiles Table**
+This table stores additional details for teachers.
+
+```sql
+CREATE TABLE TeacherProfiles (
+    teacher_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    qualifications TEXT,
+    past_experiences TEXT,
+    achievements TEXT,
+    interests TEXT,
+    specialization VARCHAR(100),
+    experience_years INT,
+    skills TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **3. AdminProfiles Table**
+This table stores additional details for admins.
+
+```sql
+CREATE TABLE AdminProfiles (
+    admin_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    qualifications TEXT,
+    past_experiences TEXT,
+    achievements TEXT,
+    interests TEXT,
+    specialization VARCHAR(100),
+    experience_years INT,
+    skills TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **4. StudentProfiles Table**
+This table stores additional details for students.
+
+```sql
+CREATE TABLE StudentProfiles (
+    student_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    achievements TEXT,
+    parent_name VARCHAR(100),
+    parent_contact VARCHAR(20),
+    parent_email VARCHAR(100),
+    parent_address TEXT,
+    parent_occupation VARCHAR(100),
+    grade VARCHAR(20),
+    section VARCHAR(10),
+    roll_no INT,
+    dob DATE,
+    student_address TEXT,
+    student_contact VARCHAR(20),
+    student_email VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **5. Classes Table**
+This table stores information about classes.
+
+```sql
+CREATE TABLE Classes (
+    class_id SERIAL PRIMARY KEY,
+    class_name VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **6. Sections Table**
+This table stores sections for each class (e.g., Class 1-A, Class 1-B).
+
+```sql
+CREATE TABLE Sections (
+    section_id SERIAL PRIMARY KEY,
+    class_id INT NOT NULL REFERENCES Classes(class_id) ON DELETE CASCADE,
+    section_name VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (class_id, section_name)
+);
+```
+
+---
+
+### **7. Subjects Table**
+This table stores information about subjects.
+
+```sql
+CREATE TABLE Subjects (
+    subject_id SERIAL PRIMARY KEY,
+    subject_name VARCHAR(100) NOT NULL,
+    writer VARCHAR(100),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **8. ClassSubjects Table**
+This table associates subjects with classes and includes additional details like difficulty level.
+
+```sql
+CREATE TABLE ClassSubjects (
+    class_subject_id SERIAL PRIMARY KEY,
+    class_id INT NOT NULL REFERENCES Classes(class_id) ON DELETE CASCADE,
+    subject_id INT NOT NULL REFERENCES Subjects(subject_id) ON DELETE CASCADE,
+    difficulty_level VARCHAR(50),
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (class_id, subject_id)
+);
+```
+
+---
+
+### **9. TuitionPeriods Table**
+This table stores information about tuition periods (e.g., academic years or semesters).
+
+```sql
+CREATE TABLE TuitionPeriods (
+    tuition_period_id SERIAL PRIMARY KEY,
+    period_name VARCHAR(100) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **10. TeacherClassSubjectAssignments Table**
+This table assigns teachers to specific subjects for a class during a tuition period.
+
+```sql
+CREATE TABLE TeacherClassSubjectAssignments (
+    assignment_id SERIAL PRIMARY KEY,
+    teacher_id INT NOT NULL REFERENCES TeacherProfiles(teacher_id) ON DELETE CASCADE,
+    class_subject_id INT NOT NULL REFERENCES ClassSubjects(class_subject_id) ON DELETE CASCADE,
+    tuition_period_id INT NOT NULL REFERENCES TuitionPeriods(tuition_period_id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (teacher_id, class_subject_id, tuition_period_id)
+);
+```
+
+I need all Tables CRUD operations and other inter-related operations with queries.
+
+
+Notes:
+- All Database related operations must be done in background(goroutine).
+- Table's name must not be hardcoded. Means you can define Table's name as const.
+- If required use Channels
+- Create all functions to make it full working.
+- It must be best optimisation and performance.
+
+Below is my Postgres database connectivity code snippet, this you can use to proceed further.
+
+const DATABASE_NAME = "ashwani"
+const TABLE_USERS = "user"
+
+// Global database connection pool
+var db *pgxpool.Pool
+
+// ConnectDB Database connection function
+func ConnectDB() {
+	dsn := fmt.Sprintf("postgres://ashwani:@localhost:5432/%s", DATABASE_NAME)
+	var err error
+	db, err = pgxpool.New(context.Background(), dsn)
+	if err != nil {
+		log.Fatalf("Unable to connect to database: %v", err)
+	}
+	fmt.Println("Connected to PostgreSQL!")
+}

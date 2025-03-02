@@ -1,0 +1,13 @@
+
+https://postgresapp.com/
+Download and Install
+https://postgresapp.com/downloads.html
+    (OR)
+brew install libpq
+
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+
+echo 'export PATH="/opt/homebrew/opt/libpq/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+To check it, run : psql

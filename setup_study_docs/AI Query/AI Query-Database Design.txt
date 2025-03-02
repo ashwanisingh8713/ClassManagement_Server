@@ -1,0 +1,43 @@
+
+1. -----------------------------------------------------------------------------------------------------
+I have one domain which is Class, Subject and Teacher.
+There must be three types of Users(Teachers, Admin, Students).
+
+Below are expected Tables:
+1.Users -- user_id, username, password_hash, role, created_at, updated_at, email
+2.TeacherProfiles -- teacher_id, user_id, first_name, last_name, qualifications, past_experiences, achievements, interests, specialization, experience_years, created_at, updated_at, skills
+3.AdminProfiles -- admin_id, user_id, first_name, last_name, created_at, updated_at, skills, interests, experience_years, qualifications, past_experiences, achievements, specialization
+4.StudentProfiles -- student_id, user_id, first_name, last_name, created_at, updated_at, achievements, parent_name, parent_contact, parent_email, parent_address, parent_occupation, grade, section, roll_no, dob, student_address, student_contact, student_email
+5.Classes -- class_id, class_name, created_at, updated_at
+7.Subjects -- subject_id, subject_name, created_at, updated_at, writer, description,
+8.ClassSubjects -- class_subject_id, class_id, subject_id, created_at, updated_at, difficulty_level, description
+9.TuitionPeriods
+10.TeacherClassSubjectAssignments  // Here, we can assign subjects to teachers for a specific class on particular tuition period.
+
+
+
+Class should have sections like Class 1-A, Class 1-B etc..
+
+As we know same type of subject is available with different level in different classes.
+For the same type of subjects can be taught by different type of teachers with different level of skills and experience.
+
+Consider other use cases also from your side.
+Please explain Tables for the above in Postgres DB.
+
+2. -----------------------------------------------------------------------------------------------------
+Suppose in one school there are classes from Class-1 to Class-10 with sections,
+but here in school total tuition period is 7, and separately one  lunch and short break.
+So please make logic for Subject, Teacher and  Class and tuition period allocations.
+
+3. -----------------------------------------------------------------------------------------------------
+I have one domain which is Class, Subject and Teacher.
+For this I want to write Backend apis.
+Tech Specification:
+GoLang Programming Language, in this Gin framework should be used.
+Postgres Database should be used.
+
+Can you please make full source code done?
+
+Please make sure Backend apis should be available separately for Browser app and Mobile app.
+
+-----------------------------------------------------------------------------------------------------

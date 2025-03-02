@@ -1,0 +1,131 @@
+Chat GTP
+---------------------------------------------------
+I have one domain which is Class, Subject and Teacher.
+To access there should be Users(Teachers & Admin) also.
+Class should have sections like Class 1-A, Class 1-B etc..
+
+As we know same type of subject is available with different level in different classes.
+For the same type of subjects can be taught by different type of teachers with different level of skills and experience.
+
+Consider other use cases also from your side.
+Please explain Table for the above in Postgres DB.
+---------------------------------------------------
+Based on your requirements and considering best database design practices, here is the PostgreSQL schema with explanations:
+---
+
+### **Tables and Relationships:**
+1. **Users Table** (`users`)  
+   - Stores all users (teachers and admins).  
+   - Role-based access control to differentiate teachers and admins.
+
+2. **Classes Table** (`classes`)  
+   - Represents a standard academic class (e.g., Class 1, Class 2).  
+
+3. **Sections Table** (`sections`)  
+   - Represents specific sections within a class (e.g., Class 1-A, Class 1-B).  
+
+4. **Subjects Table** (`subjects`)  
+   - Represents different subjects that may be taught at various levels.  
+
+5. **Class_Subject Table** (`class_subjects`)  
+   - Represents which subjects are associated with which class levels.
+
+6. **Teachers Table** (`teachers`)  
+   - Contains teacher-specific information (like skills and experience).  
+
+7. **Teacher_Subject Table** (`teacher_subjects`)  
+   - Many-to-many relationship between teachers and subjects.  
+   - Includes skill level & experience.  
+
+8. **Assignments Table** (`assignments`)  
+   - Assigns teachers to specific class-section-subject combinations.
+
+---
+
+### **Explanation of the Relationships:**
+
+1. **Users Table:** Stores admin and teacher login credentials.
+2. **Classes & Sections Table:** A class can have multiple sections.
+3. **Subjects Table:** Stores all subjects without duplication.
+4. **Class_Subject Table:** Assigns subjects to specific class levels.
+5. **Teachers Table:** Stores teacher-specific details.
+6. **Teacher_Subject Table:** Tracks teachers' skill levels for each subject.
+7. **Assignments Table:** Assigns a teacher to teach a specific subject in a particular class section.
+
+---
+
+### **PostgreSQL Table Schema**
+
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role VARCHAR(50) CHECK (role IN ('Admin', 'Teacher')) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE classes (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE -- e.g., "Class 1", "Class 2"
+);
+
+CREATE TABLE sections (
+    id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes(id) ON DELETE CASCADE,
+    section_name VARCHAR(10) NOT NULL,  -- e.g., "A", "B"
+    UNIQUE (class_id, section_name)
+);
+
+CREATE TABLE subjects (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,  -- e.g., "Mathematics", "Science"
+    description TEXT
+);
+
+CREATE TABLE class_subjects (
+    id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES classes(id) ON DELETE CASCADE,
+    subject_id INT REFERENCES subjects(id) ON DELETE CASCADE,
+    subject_level VARCHAR(50) NOT NULL, -- e.g., "Basic", "Advanced"
+    UNIQUE (class_id, subject_id, subject_level)
+);
+
+CREATE TABLE teachers (
+    id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    qualification TEXT,
+    years_of_experience INT DEFAULT 0,
+    specialization VARCHAR(100)
+);
+
+CREATE TABLE teacher_subjects (
+    id SERIAL PRIMARY KEY,
+    teacher_id INT REFERENCES teachers(id) ON DELETE CASCADE,
+    subject_id INT REFERENCES subjects(id) ON DELETE CASCADE,
+    skill_level VARCHAR(50) CHECK (skill_level IN ('Beginner', 'Intermediate', 'Expert')),
+    years_experience INT DEFAULT 0,
+    UNIQUE (teacher_id, subject_id)
+);
+
+CREATE TABLE assignments (
+    id SERIAL PRIMARY KEY,
+    teacher_id INT REFERENCES teachers(id) ON DELETE CASCADE,
+    class_subject_id INT REFERENCES class_subjects(id) ON DELETE CASCADE,
+    section_id INT REFERENCES sections(id) ON DELETE CASCADE,
+    UNIQUE (teacher_id, class_subject_id, section_id)
+);
+```
+
+---
+
+
+
+### **Use Case Examples:**
+- **A teacher (User) can teach multiple subjects.**
+- **Subjects can be assigned to different class levels with different difficulties.**
+- **A specific subject (e.g., Mathematics) can be taught by different teachers with different expertise levels.**
+- **Admins can assign teachers to specific class-sections for particular subjects.**
+
+Would you like any modifications or additional constraints? 🚀

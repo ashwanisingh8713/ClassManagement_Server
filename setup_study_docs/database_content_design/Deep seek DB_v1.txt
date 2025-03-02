@@ -1,0 +1,154 @@
+Deep SEEK - Database Design for Class, Subject, Teacher Management
+--------------------------------------------
+I have one domain which is Class, Subject and Teacher.
+To access there should be Users(Teachers & Admin) also.
+Class should have sections like Class 1-A, Class 1-B etc..
+
+As we know same type of subject is available with different level in different classes.
+For the same type of subjects can be taught by different type of teachers with different level of skills and experience.
+
+Consider other use cases also from your side.
+Please explain Table for the above in Postgres DB.
+-----------------------------------------------------
+To design a PostgreSQL database schema for the given requirements, we need to consider the entities and their relationships. Here are the key entities and their attributes:
+---
+### **Explanation of the Relationships:**
+
+1. **Users**: To store information about teachers and admins.
+2. **Classes**: To store information about classes and their sections.
+3. **Subjects**: To store information about subjects.
+4. **Teachers**: To store information about teachers, including their skills and experience.
+5. **Class_Subjects**: To manage the relationship between classes and subjects.
+6. **Teacher_Subjects**: To manage the relationship between teachers and subjects.
+
+### Tables and Their Columns
+
+#### 1. Users Table
+This table will store information about all users, including teachers and admins.
+
+```sql
+CREATE TABLE Users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('teacher', 'admin')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 2. Classes Table
+This table will store information about classes and their sections.
+
+```sql
+CREATE TABLE Classes (
+    class_id SERIAL PRIMARY KEY,
+    class_name VARCHAR(50) NOT NULL,
+    section VARCHAR(10) NOT NULL,
+    UNIQUE (class_name, section)
+);
+```
+
+#### 3. Subjects Table
+This table will store information about subjects.
+
+```sql
+CREATE TABLE Subjects (
+    subject_id SERIAL PRIMARY KEY,
+    subject_name VARCHAR(100) NOT NULL,
+    level VARCHAR(50) NOT NULL,
+    UNIQUE (subject_name, level)
+);
+```
+
+#### 4. Teachers Table
+This table will store detailed information about teachers.
+
+```sql
+CREATE TABLE Teachers (
+    teacher_id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES Users(user_id) ON DELETE CASCADE,
+    full_name VARCHAR(100) NOT NULL,
+    skills TEXT,
+    experience_years INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+#### 5. Class_Subjects Table
+This table will manage the relationship between classes and subjects.
+
+```sql
+CREATE TABLE Class_Subjects (
+    class_subject_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES Classes(class_id) ON DELETE CASCADE,
+    subject_id INT REFERENCES Subjects(subject_id) ON DELETE CASCADE,
+    UNIQUE (class_id, subject_id)
+);
+```
+
+#### 6. Teacher_Subjects Table
+This table will manage the relationship between teachers and subjects.
+
+```sql
+CREATE TABLE Teacher_Subjects (
+    teacher_subject_id SERIAL PRIMARY KEY,
+    teacher_id INT REFERENCES Teachers(teacher_id) ON DELETE CASCADE,
+    subject_id INT REFERENCES Subjects(subject_id) ON DELETE CASCADE,
+    UNIQUE (teacher_id, subject_id)
+);
+```
+
+### Example Use Cases and Queries
+
+1. **Adding a New Class with Sections:**
+   ```sql
+   INSERT INTO Classes (class_name, section) VALUES ('Class 1', 'A');
+   INSERT INTO Classes (class_name, section) VALUES ('Class 1', 'B');
+   ```
+
+2. **Adding a New Subject:**
+   ```sql
+   INSERT INTO Subjects (subject_name, level) VALUES ('Mathematics', 'Basic');
+   INSERT INTO Subjects (subject_name, level) VALUES ('Mathematics', 'Advanced');
+   ```
+
+3. **Assigning a Subject to a Class:**
+   ```sql
+   INSERT INTO Class_Subjects (class_id, subject_id) VALUES (1, 1);
+   ```
+
+4. **Adding a New Teacher:**
+   ```sql
+   INSERT INTO Users (username, password_hash, role) VALUES ('teacher_john', 'hashed_password', 'teacher');
+   INSERT INTO Teachers (user_id, full_name, skills, experience_years) VALUES (1, 'John Doe', 'Mathematics, Physics', 5);
+   ```
+
+5. **Assigning a Subject to a Teacher:**
+   ```sql
+   INSERT INTO Teacher_Subjects (teacher_id, subject_id) VALUES (1, 1);
+   ```
+
+6. **Fetching All Classes and Their Subjects:**
+   ```sql
+   SELECT c.class_name, c.section, s.subject_name, s.level
+   FROM Classes c
+   JOIN Class_Subjects cs ON c.class_id = cs.class_id
+   JOIN Subjects s ON cs.subject_id = s.subject_id;
+   ```
+
+7. **Fetching All Teachers and Their Subjects:**
+   ```sql
+   SELECT t.full_name, s.subject_name, s.level
+   FROM Teachers t
+   JOIN Teacher_Subjects ts ON t.teacher_id = ts.teacher_id
+   JOIN Subjects s ON ts.subject_id = s.subject_id;
+   ```
+
+### Additional Considerations
+
+- **Indexes**: Consider adding indexes on frequently queried columns like `user_id`, `class_id`, `subject_id`, and `teacher_id` to improve performance.
+- **Security**: Ensure that passwords are hashed using a secure hashing algorithm (e.g., bcrypt).
+- **Audit Logs**: You might want to add audit logs to track changes to critical tables.
+- **Constraints**: Use constraints to enforce business rules, such as ensuring that a teacher cannot be assigned to a subject they are not qualified to teach.
+
+This schema should cover the basic requirements and provide a solid foundation for further expansion based on additional use cases.

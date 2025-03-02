@@ -1,0 +1,186 @@
+Deep SEEK - Database Design for Class, Subject, Teacher Management
+--------------------------------------------
+I have one domain which is Class, Subject and Teacher.
+To access there should be Users(Teachers & Admin) also.
+"Users" Table must have `user_id`, `username`, `password_hash`, `role`, `created_at`, `updated_at`, `email` .
+Users should have their detailed profile.
+Teacher should have their detailed profile like First-Name, Last-Name, All-qualification with percentage, past experiences in detail, achievements, interests, specialization, experience_years, created_at, updated_at, skills
+Class should have sections like Class 1-A, Class 1-B etc..
+
+As we know same type of subject is available with different level in different classes.
+For the same type of subjects can be taught by different type of teachers with different level of skills and experience.
+
+Consider other use cases also from your side.
+Please explain Table for the above in Postgres DB.
+
+--------------------------------------------
+
+To design a PostgreSQL database schema for the given requirements, we need to consider the relationships between entities like `Users`, `Teachers`, `Classes`, `Subjects`, and `Sections`. Below is a detailed explanation of the tables and their relationships:
+
+---
+
+### **1. Users Table**
+This table will store all users, including teachers and admins. It will have a `role` column to differentiate between them.
+
+```sql
+CREATE TABLE Users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) NOT NULL CHECK (role IN ('admin', 'teacher')),
+    email VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **2. Teacher Profiles Table**
+This table will store detailed profiles of teachers. It has a one-to-one relationship with the `Users` table.
+
+```sql
+CREATE TABLE TeacherProfiles (
+    teacher_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE NOT NULL REFERENCES Users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    qualifications JSONB, -- Stores qualifications with percentages as JSON
+    past_experiences JSONB, -- Detailed past experiences as JSON
+    achievements JSONB, -- Achievements of the teacher as JSON
+    interests TEXT, -- Interests of the teacher
+    specialization VARCHAR(100), -- Specialization area
+    experience_years INT, -- Years of experience
+    skills TEXT, -- Skills of the teacher
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **3. Classes Table**
+This table will store information about classes.
+
+```sql
+CREATE TABLE Classes (
+    class_id SERIAL PRIMARY KEY,
+    class_name VARCHAR(50) NOT NULL UNIQUE -- e.g., "Class 1", "Class 2"
+);
+```
+
+---
+
+### **4. Sections Table**
+This table will store sections for each class (e.g., Class 1-A, Class 1-B).
+
+```sql
+CREATE TABLE Sections (
+    section_id SERIAL PRIMARY KEY,
+    class_id INT NOT NULL REFERENCES Classes(class_id) ON DELETE CASCADE,
+    section_name VARCHAR(50) NOT NULL, -- e.g., "A", "B"
+    UNIQUE (class_id, section_name) -- Ensures unique section names per class
+);
+```
+
+---
+
+### **5. Subjects Table**
+This table will store subjects available in the system. The same subject can have different levels.
+
+```sql
+CREATE TABLE Subjects (
+    subject_id SERIAL PRIMARY KEY,
+    subject_name VARCHAR(100) NOT NULL, -- e.g., "Mathematics"
+    level VARCHAR(50) NOT NULL, -- e.g., "Basic", "Advanced"
+    UNIQUE (subject_name, level) -- Ensures unique subject-level combinations
+);
+```
+
+---
+
+### **6. Teacher-Subject Assignments Table**
+This table will map teachers to subjects they can teach. A teacher can teach multiple subjects, and a subject can be taught by multiple teachers.
+
+```sql
+CREATE TABLE TeacherSubjectAssignments (
+    assignment_id SERIAL PRIMARY KEY,
+    teacher_id INT NOT NULL REFERENCES TeacherProfiles(teacher_id) ON DELETE CASCADE,
+    subject_id INT NOT NULL REFERENCES Subjects(subject_id) ON DELETE CASCADE,
+    UNIQUE (teacher_id, subject_id) -- Ensures a teacher is not assigned the same subject twice
+);
+```
+
+---
+
+### **7. Class-Subject Assignments Table**
+This table will map subjects to classes. A class can have multiple subjects, and a subject can be taught in multiple classes.
+
+```sql
+CREATE TABLE ClassSubjectAssignments (
+    class_subject_id SERIAL PRIMARY KEY,
+    class_id INT NOT NULL REFERENCES Classes(class_id) ON DELETE CASCADE,
+    subject_id INT NOT NULL REFERENCES Subjects(subject_id) ON DELETE CASCADE,
+    UNIQUE (class_id, subject_id) -- Ensures a subject is not assigned to the same class twice
+);
+```
+
+---
+
+### **8. Section-Teacher-Subject Assignments Table**
+This table will map teachers to specific sections and subjects they teach. It ensures that a teacher is assigned to teach a specific subject in a specific section.
+
+```sql
+CREATE TABLE SectionTeacherSubjectAssignments (
+    assignment_id SERIAL PRIMARY KEY,
+    section_id INT NOT NULL REFERENCES Sections(section_id) ON DELETE CASCADE,
+    teacher_id INT NOT NULL REFERENCES TeacherProfiles(teacher_id) ON DELETE CASCADE,
+    subject_id INT NOT NULL REFERENCES Subjects(subject_id) ON DELETE CASCADE,
+    UNIQUE (section_id, teacher_id, subject_id) -- Ensures no duplicate assignments
+);
+```
+
+---
+
+### **Relationships and Use Cases**
+1. **Users and Teachers**: A `user_id` in the `Users` table is linked to a `teacher_id` in the `TeacherProfiles` table.
+2. **Classes and Sections**: A `class_id` in the `Classes` table is linked to multiple `section_id`s in the `Sections` table.
+3. **Subjects and Teachers**: The `TeacherSubjectAssignments` table links teachers to subjects they can teach.
+4. **Subjects and Classes**: The `ClassSubjectAssignments` table links subjects to classes.
+5. **Section-Teacher-Subject**: The `SectionTeacherSubjectAssignments` table ensures that a teacher is assigned to teach a specific subject in a specific section.
+
+---
+
+### **Example Queries**
+1. **Get all teachers who teach Mathematics (Basic)**:
+   ```sql
+   SELECT t.first_name, t.last_name
+   FROM TeacherProfiles t
+   JOIN TeacherSubjectAssignments tsa ON t.teacher_id = tsa.teacher_id
+   JOIN Subjects s ON tsa.subject_id = s.subject_id
+   WHERE s.subject_name = 'Mathematics' AND s.level = 'Basic';
+   ```
+
+2. **Get all subjects taught in Class 1-A**:
+   ```sql
+   SELECT s.subject_name, s.level
+   FROM Subjects s
+   JOIN ClassSubjectAssignments csa ON s.subject_id = csa.subject_id
+   JOIN Classes c ON csa.class_id = c.class_id
+   JOIN Sections sec ON c.class_id = sec.class_id
+   WHERE c.class_name = 'Class 1' AND sec.section_name = 'A';
+   ```
+
+3. **Get all sections where a specific teacher teaches**:
+   ```sql
+   SELECT c.class_name, sec.section_name
+   FROM Sections sec
+   JOIN SectionTeacherSubjectAssignments stsa ON sec.section_id = stsa.section_id
+   JOIN TeacherProfiles t ON stsa.teacher_id = t.teacher_id
+   JOIN Classes c ON sec.class_id = c.class_id
+   WHERE t.user_id = 1; -- Replace with the desired teacher's user_id
+   ```
+
+---
+
+This schema is normalized and scalable, allowing for future additions like student management, attendance tracking, or grading systems. Let me know if you need further clarification or enhancements!

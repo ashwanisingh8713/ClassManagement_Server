@@ -1,0 +1,177 @@
+Here’s how your PostgreSQL database schema can be structured to cover all your requirements while optimizing performance and scalability.
+
+---
+
+### **1. Users Table**
+This is the primary table for authentication and authorization.
+
+```sql
+CREATE TABLE Users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role VARCHAR(50) CHECK (role IN ('Teacher', 'Admin', 'Student')) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **2. TeacherProfiles Table**
+Holds detailed information about teachers.
+
+```sql
+CREATE TABLE TeacherProfiles (
+    teacher_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE REFERENCES Users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    qualifications TEXT,
+    past_experiences TEXT,
+    achievements TEXT,
+    interests TEXT,
+    specialization TEXT,
+    experience_years INT CHECK (experience_years >= 0),
+    skills TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **3. AdminProfiles Table**
+Stores admin-specific details.
+
+```sql
+CREATE TABLE AdminProfiles (
+    admin_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE REFERENCES Users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    qualifications TEXT,
+    past_experiences TEXT,
+    achievements TEXT,
+    specialization TEXT,
+    experience_years INT CHECK (experience_years >= 0),
+    skills TEXT,
+    interests TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **4. StudentProfiles Table**
+Holds student-related data, including parent details.
+
+```sql
+CREATE TABLE StudentProfiles (
+    student_id SERIAL PRIMARY KEY,
+    user_id INT UNIQUE REFERENCES Users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    dob DATE,
+    roll_no INT UNIQUE,
+    grade VARCHAR(50) NOT NULL,
+    section VARCHAR(10) NOT NULL,  -- E.g., 'A', 'B', etc.
+    student_address TEXT,
+    student_contact VARCHAR(20),
+    student_email VARCHAR(255) UNIQUE,
+    parent_name VARCHAR(100),
+    parent_contact VARCHAR(20),
+    parent_email VARCHAR(255),
+    parent_address TEXT,
+    parent_occupation VARCHAR(100),
+    qualifications TEXT,
+    past_experiences TEXT,
+    achievements TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **5. Classes Table**
+Represents different classes (e.g., Class 1-A, Class 1-B).
+
+```sql
+CREATE TABLE Classes (
+    class_id SERIAL PRIMARY KEY,
+    class_name VARCHAR(50) UNIQUE NOT NULL,  -- Example: 'Class 1-A'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **6. Subjects Table**
+Stores subjects and their descriptions.
+
+```sql
+CREATE TABLE Subjects (
+    subject_id SERIAL PRIMARY KEY,
+    subject_name VARCHAR(100) NOT NULL,
+    writer VARCHAR(255),  -- Who wrote the syllabus or books
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **7. ClassSubjects Table**
+Links subjects to different classes with different difficulty levels.
+
+```sql
+CREATE TABLE ClassSubjects (
+    class_subject_id SERIAL PRIMARY KEY,
+    class_id INT REFERENCES Classes(class_id) ON DELETE CASCADE,
+    subject_id INT REFERENCES Subjects(subject_id) ON DELETE CASCADE,
+    difficulty_level VARCHAR(50), -- E.g., Beginner, Intermediate, Advanced
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE(class_id, subject_id) -- Ensuring a class has a subject only once at a particular level
+);
+```
+
+---
+
+### **8. TuitionPeriods Table**
+Defines tuition period slots.
+
+```sql
+CREATE TABLE TuitionPeriods (
+    tuition_period_id SERIAL PRIMARY KEY,
+    period_name VARCHAR(50) NOT NULL,  -- E.g., "Morning Batch", "Evening Batch"
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+```
+
+---
+
+### **9. TeacherClassSubjectAssignments Table**
+Assigns teachers to teach specific subjects for a class at a given tuition period.
+
+```sql
+CREATE TABLE TeacherClassSubjectAssignments (
+    assignment_id SERIAL PRIMARY KEY,
+    teacher_id INT REFERENCES TeacherProfiles(teacher_id) ON DELETE CASCADE,
+    class_subject_id INT REFERENCES ClassSubjects(class_subject_id) ON DELETE CASCADE,
+    tuition_period_id INT REFERENCES TuitionPeriods(tuition_period_id) ON DELETE CASCADE,
+    experience_level VARCHAR(50),  -- E.g., "Expert", "Intermediate"
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE(teacher_id, class_subject_id, tuition_period_id)  -- Prevent duplicate assignments
+);
+```
