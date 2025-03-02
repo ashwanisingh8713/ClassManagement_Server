@@ -5,7 +5,7 @@ import (
 	"ClassManagement/database"
 )
 
-/// @title API for Class Management
+// @title API for Class Management
 // @version 1.0
 // @description These are APIs for Class, Subject and Teacher Management.
 // @termsOfService http://swagger.io/terms/

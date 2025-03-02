@@ -9,6 +9,9 @@ Pull swagger libraries.
     brew install node
     npm install -g http-server
     git clone https://github.com/swagger-api/swagger-editor.git
+
+### To Run Swagger server
+    cd swagger-editor
     http-server -p 8081 swagger-editor
 
 To Open swagger in Browser

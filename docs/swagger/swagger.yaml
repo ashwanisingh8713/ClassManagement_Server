@@ -1,4 +1,162 @@
+basePath: /
+definitions:
+  api.EmailCheck:
+    properties:
+      email:
+        type: string
+      msg:
+        type: string
+    type: object
+  api.EmailInput:
+    properties:
+      email:
+        type: string
+    type: object
+  api.EmailPassword:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  database.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      password_hash:
+        type: string
+      role:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  model.CreateUser:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+host: 0.0.0.0:8080
 info:
-  contact: {}
-paths: {}
+  contact:
+    email: support@swagger.io
+    name: API Support (Ashwani)
+    url: http://www.swagger.io/support
+  description: These are APIs for Class, Subject and Teacher Management.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: API for Class Management
+  version: "1.0"
+paths:
+  /isUserExist:
+    post:
+      description: To check if user exists or not
+      parameters:
+      - description: It takes email as input
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/api.EmailInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.EmailCheck'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: To check whether Email already registered with any User or not.
+      tags:
+      - User Module
+  /signIn:
+    post:
+      description: To create a new user
+      parameters:
+      - description: It takes json as input
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/api.EmailPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Signup user
+      tags:
+      - User Module
+  /signUp:
+    post:
+      description: To create a new user
+      parameters:
+      - description: It takes json as input
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.CreateUser'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Signup user
+      tags:
+      - User Module
+schemes:
+- http
 swagger: "2.0"
