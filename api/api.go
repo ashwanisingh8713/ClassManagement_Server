@@ -24,9 +24,9 @@ func StartApi() {
 
 // It holds User Module all Routes
 func setupUserModuleRoutes(route *gin.Engine) {
-	route.POST(IsUserExist, isUserExist)
-	route.POST(SignUp, signUp)
-	route.POST(SignIn, signIn)
+	route.POST(Route_IsUserExist, isUserExist)
+	route.POST(Route_SignUp, signUp)
+	route.POST(Route_SignIn, signIn)
 }
 
 // To enable CORS request

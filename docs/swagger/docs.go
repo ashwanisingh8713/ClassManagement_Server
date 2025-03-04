@@ -24,6 +24,107 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/changePassword": {
+            "post": {
+                "description": "To Change Password by existing user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Module"
+                ],
+                "summary": "Change Password of the user",
+                "parameters": [
+                    {
+                        "description": "It takes json as input",
+                        "name": "json",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.ChangePasswordInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/forgotPassword": {
+            "post": {
+                "description": "To retrieve the password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User Module"
+                ],
+                "summary": "Forgot Password",
+                "parameters": [
+                    {
+                        "description": "It takes json as input",
+                        "name": "json",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.ForgotPasswordInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/database.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/isUserExist": {
             "post": {
                 "description": "To check if user exists or not",
@@ -49,7 +150,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.EmailCheck"
+                            "$ref": "#/definitions/api.EmailExistResponse"
                         }
                     },
                     "400": {
@@ -75,14 +176,14 @@ const docTemplate = `{
         },
         "/signIn": {
             "post": {
-                "description": "To create a new user",
+                "description": "To login by existing user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "User Module"
                 ],
-                "summary": "Signup user",
+                "summary": "Sign In user",
                 "parameters": [
                     {
                         "description": "It takes json as input",
@@ -131,7 +232,7 @@ const docTemplate = `{
                 "tags": [
                     "User Module"
                 ],
-                "summary": "Signup user",
+                "summary": "Sign Up by User",
                 "parameters": [
                     {
                         "description": "It takes json as input",
@@ -173,11 +274,31 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "api.EmailCheck": {
+        "api.ChangePasswordInput": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
+                },
+                "newPassword": {
+                    "type": "string"
+                },
+                "oldPassword": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.EmailExistResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "isExist": {
+                    "type": "boolean"
                 },
                 "msg": {
                     "type": "string"
@@ -199,6 +320,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.ForgotPasswordInput": {
+            "type": "object",
+            "properties": {
+                "email": {
                     "type": "string"
                 }
             }

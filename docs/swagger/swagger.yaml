@@ -1,9 +1,22 @@
 basePath: /
 definitions:
-  api.EmailCheck:
+  api.ChangePasswordInput:
     properties:
       email:
         type: string
+      newPassword:
+        type: string
+      oldPassword:
+        type: string
+    type: object
+  api.EmailExistResponse:
+    properties:
+      code:
+        type: integer
+      email:
+        type: string
+      isExist:
+        type: boolean
       msg:
         type: string
     type: object
@@ -17,6 +30,11 @@ definitions:
       email:
         type: string
       password:
+        type: string
+    type: object
+  api.ForgotPasswordInput:
+    properties:
+      email:
         type: string
     type: object
   database.User:
@@ -61,6 +79,72 @@ info:
   title: API for Class Management
   version: "1.0"
 paths:
+  /changePassword:
+    post:
+      description: To Change Password by existing user
+      parameters:
+      - description: It takes json as input
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/api.ChangePasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Change Password of the user
+      tags:
+      - User Module
+  /forgotPassword:
+    post:
+      consumes:
+      - application/json
+      description: To retrieve the password
+      parameters:
+      - description: It takes json as input
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/api.ForgotPasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.User'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Forgot Password
+      tags:
+      - User Module
   /isUserExist:
     post:
       description: To check if user exists or not
@@ -77,7 +161,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.EmailCheck'
+            $ref: '#/definitions/api.EmailExistResponse'
         "400":
           description: Bad Request
           schema:
@@ -95,7 +179,7 @@ paths:
       - User Module
   /signIn:
     post:
-      description: To create a new user
+      description: To login by existing user
       parameters:
       - description: It takes json as input
         in: body
@@ -122,7 +206,7 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: Signup user
+      summary: Sign In user
       tags:
       - User Module
   /signUp:
@@ -154,7 +238,7 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: Signup user
+      summary: Sign Up by User
       tags:
       - User Module
 schemes:

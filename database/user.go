@@ -60,6 +60,12 @@ func GetUserByEmailAndPasswordHash(email, passwordHash string) (User, error) {
 	return user, nil
 }
 
+func UpdatePasswordByEmail(email, passwordHash string) error {
+	query := fmt.Sprintf(`UPDATE %s SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2`, TableUsers)
+	_, err := db.Exec(context.Background(), query, passwordHash, email)
+	return err
+}
+
 func GetUserByID(userID int) (string, string, string, string, error) {
 	query := fmt.Sprintf(`SELECT username, password_hash, role, email FROM %s WHERE user_id = $1`, TableUsers)
 	row := db.QueryRow(context.Background(), query, userID)
