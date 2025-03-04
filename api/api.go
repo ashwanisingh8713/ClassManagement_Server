@@ -24,9 +24,16 @@ func StartApi() {
 
 // It holds User Module all Routes
 func setupUserModuleRoutes(route *gin.Engine) {
+	route.POST(Route_ChangePassword, changePassword)
+	route.POST(Route_ForgotPassword, forgotPassword)
 	route.POST(Route_IsUserExist, isUserExist)
 	route.POST(Route_SignUp, signUp)
 	route.POST(Route_SignIn, signIn)
+}
+
+func setupTeacherModuleRoutes(route *gin.Engine) {
+	route.POST(Route_CreateTeacherProfile, createTeacherProfile)
+	route.POST(Route_GetTeacherProfile, getTeacherProfile)
 }
 
 // To enable CORS request

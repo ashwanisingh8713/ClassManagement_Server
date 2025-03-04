@@ -35,14 +35,14 @@ func CreateTeacherProfile(profile TeacherProfile) error {
 		Scan(&profile.TeacherID, &profile.CreatedAt, &profile.UpdatedAt)
 }
 
-// GetTeacherProfile retrieves a teacher profile by ID
-func GetTeacherProfile(teacherID int) (TeacherProfile, error) {
+// GetTeacherProfile retrieves a teacher profile by UserID
+func GetTeacherProfile(userID string) (TeacherProfile, error) {
 	var profile TeacherProfile
 	query := fmt.Sprintf(`
 		SELECT teacher_id, user_id, first_name, last_name, qualifications, past_experiences, achievements, interests, specialization, experience_years, skills, created_at, updated_at
 		FROM %s
-		WHERE teacher_id = $1`, TableTeacherProfiles)
-	err := db.QueryRow(context.Background(), query, teacherID).
+		WHERE user_id = $1`, TableTeacherProfiles)
+	err := db.QueryRow(context.Background(), query, userID).
 		Scan(&profile.TeacherID, &profile.UserID, &profile.FirstName, &profile.LastName, &profile.Qualifications, &profile.PastExperiences, &profile.Achievements, &profile.Interests, &profile.Specialization, &profile.ExperienceYears, &profile.Skills, &profile.CreatedAt, &profile.UpdatedAt)
 	return profile, err
 }
@@ -52,16 +52,16 @@ func UpdateTeacherProfile(profile TeacherProfile) error {
 	query := fmt.Sprintf(`
 		UPDATE %s
 		SET first_name = $1, last_name = $2, qualifications = $3, past_experiences = $4, achievements = $5, interests = $6, specialization = $7, experience_years = $8, skills = $9, updated_at = CURRENT_TIMESTAMP
-		WHERE teacher_id = $10`, TableTeacherProfiles)
-	_, err := db.Exec(context.Background(), query, profile.FirstName, profile.LastName, profile.Qualifications, profile.PastExperiences, profile.Achievements, profile.Interests, profile.Specialization, profile.ExperienceYears, profile.Skills, profile.TeacherID)
+		WHERE user_id = $10`, TableTeacherProfiles)
+	_, err := db.Exec(context.Background(), query, profile.FirstName, profile.LastName, profile.Qualifications, profile.PastExperiences, profile.Achievements, profile.Interests, profile.Specialization, profile.ExperienceYears, profile.Skills, profile.UserID)
 	return err
 }
 
-// DeleteTeacherProfile deletes a teacher profile by ID
-func DeleteTeacherProfile(teacherID int) error {
+// DeleteTeacherProfile deletes a teacher profile by UserID
+func DeleteTeacherProfile(userID int) error {
 	query := fmt.Sprintf(`
 		DELETE FROM %s
-		WHERE teacher_id = $1`, TableTeacherProfiles)
-	_, err := db.Exec(context.Background(), query, teacherID)
+		WHERE user_id = $1`, TableTeacherProfiles)
+	_, err := db.Exec(context.Background(), query, userID)
 	return err
 }

@@ -37,6 +37,44 @@ definitions:
       email:
         type: string
     type: object
+  api.StatusInfoResponse:
+    properties:
+      code:
+        type: integer
+      msg:
+        type: string
+      status:
+        type: boolean
+    type: object
+  database.TeacherProfile:
+    properties:
+      achievements:
+        type: string
+      created_at:
+        type: string
+      experience_years:
+        type: integer
+      first_name:
+        type: string
+      interests:
+        type: string
+      last_name:
+        type: string
+      past_experiences:
+        type: string
+      qualifications:
+        type: string
+      skills:
+        type: string
+      specialization:
+        type: string
+      teacher_id:
+        type: integer
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
   database.User:
     properties:
       created_at:
@@ -95,7 +133,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/api.StatusInfoResponse'
         "400":
           description: Bad Request
           schema:
@@ -111,6 +149,40 @@ paths:
       summary: Change Password of the user
       tags:
       - User Module
+  /createTeacherProfile:
+    post:
+      consumes:
+      - application/json
+      description: To Create Teacher Profile
+      parameters:
+      - description: It takes json as input
+        in: body
+        name: json
+        required: true
+        schema:
+          $ref: '#/definitions/database.TeacherProfile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.TeacherProfile'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create Teacher Profile
+      tags:
+      - Teacher
   /forgotPassword:
     post:
       consumes:
@@ -145,6 +217,39 @@ paths:
       summary: Forgot Password
       tags:
       - User Module
+  /getTeacherProfile/{user_id}:
+    post:
+      consumes:
+      - application/json
+      description: To Retrieve Teacher Profile
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/database.TeacherProfile'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieve Teacher Profile
+      tags:
+      - Teacher
   /isUserExist:
     post:
       description: To check if user exists or not
