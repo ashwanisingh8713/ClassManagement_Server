@@ -18,6 +18,8 @@ To Open swagger in Browser
 IN terminal it shows domain or host
         (OR)
 http://localhost:3000/swagger/index.html
+        (OR)
+http://127.0.0.1:<PORT>
 
 go run main.go
 swag init -g main.go --output docs/swagger/
